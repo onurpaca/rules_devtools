@@ -4,10 +4,16 @@ Bazel module for C/C++, Bazel, and Python developer tools: formatting, linting, 
 
 ## Usage
 
+Add to your `MODULE.bazel`, pinning to a commit from GitHub:
+
 ```starlark
 # MODULE.bazel
 bazel_dep(name = "rules_devtools", version = "1.8.0")
-local_path_override(module_name = "rules_devtools", path = "../rules_devtools")
+git_override(
+    module_name = "rules_devtools",
+    remote = "https://github.com/onurpaca/rules_devtools.git",
+    commit = "35d4177b81c747cb18061a31e7e2d18aaad45051",
+)
 
 devtools = use_extension("@rules_devtools//extension:devtools_ext.bzl", "devtools_extension")
 devtools.configure(
@@ -19,6 +25,16 @@ devtools.configure(
 )
 use_repo(devtools, "devtools")
 ```
+
+Then invoke any tool:
+
+```sh
+bazel run @devtools//:format_all
+bazel run @devtools//:lint_all -- --check
+bazel run @devtools//:compile_commands
+```
+
+**Prerequisites:** Python tools (`ruff`, `black`, `mypy`) must be on `PATH` if you use them — they aren't downloaded hermetically. LLVM and Bazel buildtools are fetched automatically via `llvm = "default"` / `buildtools = "default"`.
 
 ## All Targets
 
