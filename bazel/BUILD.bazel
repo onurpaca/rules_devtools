@@ -1,0 +1,16 @@
+"""Bazel meta-tools: buildifier, buildozer, depgraph, bep_report."""
+
+exports_files(
+    [
+        "buildifier.bzl",
+        "buildifier.template.py",
+        "buildozer.bzl",
+        "buildozer.template.py",
+        "depgraph.bzl",
+        "depgraph.template.py",
+        "bep_report.bzl",
+        "bep_report.template.py",
+        "bazel_devtools.bzl",
+    ],
+    visibility = ["//visibility:public"],
+)

@@ -1,0 +1,15 @@
+rules_devtools
+Copyright 2026 The rules_devtools authors.
+
+This product includes software derived from the Hedron Vision
+"bazel-compile-commands-extractor" project
+(https://github.com/hedronvision/bazel-compile-commands-extractor),
+licensed under the Apache License, Version 2.0.
+
+Specifically, the following files contain logic derived from that project:
+  - cc/compile_commands.bzl
+  - cc/compile_commands.template.py
+
+The Apache License, Version 2.0 is reproduced in the LICENSE file at the
+root of this repository, and is also available at
+http://www.apache.org/licenses/LICENSE-2.0

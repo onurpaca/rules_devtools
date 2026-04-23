@@ -1,0 +1,96 @@
+"""Auto-generated API reference for every public macro.
+
+Build everything:
+    bazel build //docs:all
+
+Single page:
+    bazel build //docs:format_all_md
+    cat bazel-bin/docs/format_all.md
+"""
+
+load("@bazel_skylib//:bzl_library.bzl", "bzl_library")
+load("@stardoc//stardoc:stardoc.bzl", "stardoc")
+
+package(default_visibility = ["//visibility:private"])
+
+_MACROS = [
+    ("clang_format", "//cc:clang_format.bzl"),
+    ("clang_tidy", "//cc:clang_tidy.bzl"),
+    ("sast", "//cc:sast.bzl"),
+    ("compile_commands", "//cc:compile_commands.bzl"),
+    ("ctags", "//cc:ctags.bzl"),
+    ("iwyu", "//cc:iwyu.bzl"),
+    ("unused_deps", "//cc:unused_deps.bzl"),
+    ("buildifier", "//bazel:buildifier.bzl"),
+    ("buildozer", "//bazel:buildozer.bzl"),
+    ("depgraph", "//bazel:depgraph.bzl"),
+    ("bep_report", "//bazel:bep_report.bzl"),
+    ("format_all", "//format_all:format_all.bzl"),
+    ("lint_all", "//lint_all:lint_all.bzl"),
+    ("cc_devtools", "//cc:cc_devtools.bzl"),
+    ("bazel_devtools", "//bazel:bazel_devtools.bzl"),
+    ("devtools", "//:devtools.bzl"),
+]
+
+_BUNDLES = ("devtools", "cc_devtools", "bazel_devtools")
+
+[
+    bzl_library(
+        name = name + "_bzl",
+        srcs = [src],
+        deps = ["@rules_python//python:py_binary_bzl"],
+    )
+    for name, src in _MACROS
+    if name not in _BUNDLES
+]
+
+bzl_library(
+    name = "cc_devtools_bzl",
+    srcs = ["//cc:cc_devtools.bzl"],
+    deps = [
+        ":clang_format_bzl",
+        ":clang_tidy_bzl",
+        ":compile_commands_bzl",
+        ":ctags_bzl",
+        ":iwyu_bzl",
+        ":sast_bzl",
+        ":unused_deps_bzl",
+    ],
+)
+
+bzl_library(
+    name = "bazel_devtools_bzl",
+    srcs = ["//bazel:bazel_devtools.bzl"],
+    deps = [
+        ":bep_report_bzl",
+        ":buildifier_bzl",
+        ":buildozer_bzl",
+        ":depgraph_bzl",
+    ],
+)
+
+bzl_library(
+    name = "devtools_bzl",
+    srcs = ["//:devtools.bzl"],
+    deps = [
+        ":bazel_devtools_bzl",
+        ":cc_devtools_bzl",
+        ":format_all_bzl",
+        ":lint_all_bzl",
+    ],
+)
+
+[
+    stardoc(
+        name = name + "_md",
+        out = name + ".md",
+        input = src,
+        deps = [":" + name + "_bzl"],
+    )
+    for name, src in _MACROS
+]
+
+filegroup(
+    name = "all",
+    srcs = [name + "_md" for name, _ in _MACROS],
+)

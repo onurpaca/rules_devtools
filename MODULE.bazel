@@ -1,0 +1,18 @@
+module(
+    name = "rules_devtools",
+    version = "1.8.0",
+)
+
+bazel_dep(name = "rules_python", version = "1.7.0")
+
+bazel_dep(name = "stardoc", version = "0.7.2", dev_dependency = True)
+bazel_dep(name = "bazel_skylib", version = "1.8.2", dev_dependency = True)
+
+# Dogfood: use our own extension to get hermetic buildifier/buildozer
+# for formatting and linting this repo's own Bazel files.
+devtools = use_extension("//extension:devtools_ext.bzl", "devtools_extension")
+devtools.configure(
+    name = "rd_internal_devtools",
+    buildtools = "default",
+)
+use_repo(devtools, "rd_internal_devtools")

@@ -1,0 +1,22 @@
+"""C/C++ devtools: clang_format, clang_tidy, sast, compile_commands, ctags, iwyu, unused_deps."""
+
+exports_files(
+    [
+        "clang_format.bzl",
+        "clang_format.template.py",
+        "clang_tidy.bzl",
+        "clang_tidy.template.py",
+        "sast.bzl",
+        "sast.template.py",
+        "compile_commands.bzl",
+        "compile_commands.template.py",
+        "ctags.bzl",
+        "ctags.template.py",
+        "iwyu.bzl",
+        "iwyu.template.py",
+        "unused_deps.bzl",
+        "unused_deps.template.py",
+        "cc_devtools.bzl",
+    ],
+    visibility = ["//visibility:public"],
+)
