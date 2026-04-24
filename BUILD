@@ -3,9 +3,9 @@ load(":devtools.bzl", "devtools")
 ########################################
 # rules_devtools: Developer Workflow Toolkit
 # Single bundle macro creates all devtools targets:
-#   bazel run //:dev_format_all                  # C++ + Bazel + Python in one pass
+#   bazel run //:dev_format_all                  # C++ + Bazel in one pass
 #   bazel run //:dev_format_all -- --check
-#   bazel run //:dev_lint_all                    # C++ + Bazel + Python in one pass
+#   bazel run //:dev_lint_all                    # C++ + Bazel in one pass
 #   bazel run //:dev_lint_all -- --fix
 #   bazel run //:dev_clang_format
 #   bazel run //:dev_clang_format -- --check
@@ -21,15 +21,9 @@ load(":devtools.bzl", "devtools")
 #   bazel run //:dev_unused_deps
 #   bazel run //:dev_depgraph -- //src:main
 #   bazel run //:dev_bep_report -- /tmp/bep.json
-#   bazel run //:dev_ruff
-#   bazel run //:dev_ruff -- --check
-#   bazel run //:dev_black
-#   bazel run //:dev_black -- --check
-#   bazel run //:dev_mypy
 devtools(
     name = "dev",
     targets = "//...",
-    py_srcs = ["**/*.py"],
 )
 
 # Stardoc users only: Depend on "@rules_devtools//:bzl_srcs_for_stardoc" as needed.

@@ -87,10 +87,6 @@ def _devtools_extension_impl(module_ctx):
                 buildifier_mode = tag.buildifier_mode,
                 buildifier_lint = tag.buildifier_lint,
                 buildifier_warnings = tag.buildifier_warnings,
-                py_srcs = tag.py_srcs,
-                ruff_system = tag.ruff_system,
-                black_system = tag.black_system,
-                mypy_system = tag.mypy_system,
             )
 
 _configure_tag = tag_class(
@@ -133,10 +129,6 @@ _configure_tag = tag_class(
         "buildifier_mode": attr.string(default = "fix"),
         "buildifier_lint": attr.string(default = "warn"),
         "buildifier_warnings": attr.string(default = ""),
-        "py_srcs": attr.string_list(doc = "Glob patterns for Python sources."),
-        "ruff_system": attr.string(default = "ruff"),
-        "black_system": attr.string(default = "black"),
-        "mypy_system": attr.string(default = "mypy"),
     },
 )
 

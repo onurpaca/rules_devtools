@@ -190,7 +190,7 @@
   "moduleExtensions": {
     "//extension:devtools_ext.bzl%devtools_extension": {
       "general": {
-        "bzlTransitiveDigest": "Gffka/bhcdYr/EChIHuVOI25HLRJA43A8Ktu7jRpQFg=",
+        "bzlTransitiveDigest": "RUOj1In5A+nXLl8/DtXNivC3rRLU/81rtmPUFemeDvI=",
         "usagesDigest": "N42wLSXjosokxZ/dTopKRCoq3hFNdPl7PBhJlLbGuMI=",
         "recordedInputs": [],
         "generatedRepoSpecs": {

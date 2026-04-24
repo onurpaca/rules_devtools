@@ -1,16 +1,14 @@
-"""Smart lint-all: dispatches files to clang-tidy (C++), buildifier-lint (Bazel), or ruff (Python).
+"""Smart lint-all: dispatches files to clang-tidy (C++) or buildifier-lint (Bazel).
 
 Tool resolution: hermetic first (if configured), PATH fallback (with warn).
 
 Template variables (baked in by lint_all.bzl):
     {cpp_patterns} — glob patterns for C++ sources
     {bazel_patterns} — glob patterns for Bazel files
-    {py_patterns} — glob patterns for Python sources
     {cpp_system_path} — PATH binary name for clang-tidy (empty disables fallback)
     {cpp_hermetic_path} — runfiles-relative path to hermetic clang-tidy
     {bazel_system_path} — PATH binary name for buildifier (empty disables fallback)
     {bazel_hermetic_path} — runfiles-relative path to hermetic buildifier
-    {py_system_path} — PATH binary name for ruff (empty disables fallback)
     {compile_commands_dir} — path to compile_commands.json directory (empty = workspace root)
     {buildifier_warnings} — comma-separated buildifier warnings
 """
@@ -24,12 +22,10 @@ import sys
 
 CPP_PATTERNS = {cpp_patterns}
 BAZEL_PATTERNS = {bazel_patterns}
-PY_PATTERNS = {py_patterns}
 CPP_SYSTEM_PATH = {cpp_system_path}
 CPP_HERMETIC_PATH = {cpp_hermetic_path}
 BAZEL_SYSTEM_PATH = {bazel_system_path}
 BAZEL_HERMETIC_PATH = {bazel_hermetic_path}
-PY_SYSTEM_PATH = {py_system_path}
 COMPILE_COMMANDS_DIR = {compile_commands_dir}
 BUILDIFIER_WARNINGS = {buildifier_warnings}
 
@@ -132,7 +128,7 @@ def parse_args(argv):
 
 
 def collect_sources(explicit, workspace_root):
-    all_patterns = list(CPP_PATTERNS) + list(BAZEL_PATTERNS) + list(PY_PATTERNS)
+    all_patterns = list(CPP_PATTERNS) + list(BAZEL_PATTERNS)
     if explicit:
         candidates = []
         for p in explicit:
@@ -145,12 +141,10 @@ def collect_sources(explicit, workspace_root):
         candidates = (
             _scan_globs(workspace_root, CPP_PATTERNS)
             + _scan_globs(workspace_root, BAZEL_PATTERNS)
-            + _scan_globs(workspace_root, PY_PATTERNS)
         )
     cpp = sorted({f for f in candidates if _path_matches(f, CPP_PATTERNS)})
     bzl = sorted({f for f in candidates if _path_matches(f, BAZEL_PATTERNS)})
-    py = sorted({f for f in candidates if _path_matches(f, PY_PATTERNS)})
-    return cpp, bzl, py
+    return cpp, bzl
 
 
 def run_clang_tidy(tool, files, fix_mode, extra_flags, workspace_root):
@@ -196,21 +190,6 @@ def run_buildifier(tool, files, fix_mode, extra_flags, workspace_root):
     return rc
 
 
-def run_ruff(tool, files, fix_mode, extra_flags, workspace_root):
-    if not files:
-        return 0
-    if fix_mode:
-        cmd = [tool, "check", "--fix"] + extra_flags + files
-    else:
-        cmd = [tool, "check"] + extra_flags + files
-    rc = subprocess.run(cmd, cwd=workspace_root).returncode
-    label = "fixed" if fix_mode else "linted"
-    color = "\033[0;31m" if rc else "\033[0;32m"
-    state = "issues found" if rc else "ok"
-    print(f"{color}[ruff] {len(files)} file(s) {label}: {state}\033[0m", file=sys.stderr if rc else sys.stdout)
-    return rc
-
-
 def main():
     workspace_root = os.environ.get("BUILD_WORKSPACE_DIRECTORY")
     if not workspace_root:
@@ -218,24 +197,21 @@ def main():
         sys.exit(1)
 
     fix_mode, explicit, extra_flags = parse_args(sys.argv)
-    cpp_files, bazel_files, py_files = collect_sources(explicit, workspace_root)
+    cpp_files, bazel_files = collect_sources(explicit, workspace_root)
 
-    if not cpp_files and not bazel_files and not py_files:
+    if not cpp_files and not bazel_files:
         scope = explicit if explicit else "<entire project>"
         print(f"\033[0;33mNo matching files under:\033[0m {scope}")
         return
 
     cpp_tool = _find_tool("clang-tidy", CPP_SYSTEM_PATH, CPP_HERMETIC_PATH) if cpp_files else None
     bazel_tool = _find_tool("buildifier", BAZEL_SYSTEM_PATH, BAZEL_HERMETIC_PATH) if bazel_files else None
-    py_tool = _find_tool("ruff", PY_SYSTEM_PATH, "") if py_files else None
 
     rc = 0
     if cpp_files:
         rc |= run_clang_tidy(cpp_tool, cpp_files, fix_mode, extra_flags, workspace_root)
     if bazel_files:
         rc |= run_buildifier(bazel_tool, bazel_files, fix_mode, extra_flags, workspace_root)
-    if py_files:
-        rc |= run_ruff(py_tool, py_files, fix_mode, extra_flags, workspace_root)
 
     sys.exit(rc)
 

@@ -1,10 +1,11 @@
 # rules_devtools
 
-Bazel module for C/C++, Bazel, and Python developer tools: formatting, linting, static analysis, code navigation, and BUILD file tooling. One `use_extension` call wires up everything.
+Bazel module for C/C++ and Bazel developer tools: formatting, linting, static analysis, code navigation, and BUILD file tooling. One `use_extension` call wires up everything.
 
 ## Usage
 
-Add to your `MODULE.bazel`, pinning to a commit from GitHub:
+Add to your `MODULE.bazel`, pinning to a commit from GitHub. Grab the latest SHA from
+[the commits page](https://github.com/onurpaca/rules_devtools/commits/main) and paste it below:
 
 ```starlark
 # MODULE.bazel
@@ -12,7 +13,7 @@ bazel_dep(name = "rules_devtools", version = "1.8.0")
 git_override(
     module_name = "rules_devtools",
     remote = "https://github.com/onurpaca/rules_devtools.git",
-    commit = "35d4177b81c747cb18061a31e7e2d18aaad45051",
+    commit = "<paste-latest-sha-here>",
 )
 
 devtools = use_extension("@rules_devtools//extension:devtools_ext.bzl", "devtools_extension")
@@ -21,7 +22,6 @@ devtools.configure(
     llvm = "default",         # for C/C++: clang-format, clang-tidy, iwyu, compile_commands
     buildtools = "default",   # for Bazel: buildifier, buildozer
     format_srcs = ["src/**/*.cpp", "src/**/*.hpp", "src/**/*.h"],
-    py_srcs = ["src/**/*.py"],
 )
 use_repo(devtools, "devtools")
 ```
@@ -34,7 +34,7 @@ bazel run @devtools//:lint_all -- --check
 bazel run @devtools//:compile_commands
 ```
 
-**Prerequisites:** Python tools (`ruff`, `black`, `mypy`) must be on `PATH` if you use them — they aren't downloaded hermetically. LLVM and Bazel buildtools are fetched automatically via `llvm = "default"` / `buildtools = "default"`.
+**Prerequisites:** LLVM and Bazel buildtools are fetched automatically via `llvm = "default"` / `buildtools = "default"`.
 
 ## All Targets
 
@@ -42,14 +42,14 @@ Run any target with `bazel run @devtools//:TARGET_NAME -- [args]`. All extra arg
 
 ### Orchestrators (run all tools in one pass)
 
-| Target | Purpose | CI check | Auto-fix |
+| Target | Purpose | Check | Auto-fix |
 |---|---|---|---|
-| `format_all` | Format C/C++ (clang-format) + Bazel (buildifier) + Python (ruff) | `-- --check` | (default) |
-| `lint_all` | Lint C/C++ (clang-tidy) + Bazel (buildifier lint) + Python (ruff check) | `-- --check` | `-- --fix` |
+| `format_all` | Format C/C++ (clang-format) + Bazel (buildifier) | `-- --check` | (default) |
+| `lint_all` | Lint C/C++ (clang-tidy) + Bazel (buildifier lint) | `-- --check` | `-- --fix` |
 
 ### C/C++ (`//cc:*`)
 
-| Target | Purpose | CI check | Auto-fix |
+| Target | Purpose | Check | Auto-fix |
 |---|---|---|---|
 | `clang_format` | Format C/C++ source | `-- --check` | `-i` |
 | `clang_tidy` | Lint C/C++ source | — | `-- --fix` |
@@ -61,31 +61,23 @@ Run any target with `bazel run @devtools//:TARGET_NAME -- [args]`. All extra arg
 
 ### Bazel (`//bazel:*`)
 
-| Target | Purpose | CI check | Auto-fix |
+| Target | Purpose | Check | Auto-fix |
 |---|---|---|---|
 | `buildifier` | Format BUILD/.bzl files | `-- --check` | (default) |
 | `buildozer` | Edit BUILD files programmatically | — | — |
 | `depgraph` | Visualize dependency graph | — | — |
 | `bep_report` | Parse BEP JSON into a report | — | — |
 
-### Python (system PATH only)
-
-| Target | Purpose | CI check | Auto-fix |
-|---|---|---|---|
-| `ruff` | Format + lint Python (wraps `ruff format` + `ruff check`) | `-- --check` | (default) |
-| `black` | Format Python | `-- --check` | `-i` |
-| `mypy` | Type-check Python | — | — |
-
 ## Examples
 
 ```sh
-# Format everything (C/C++ + Bazel + Python in one pass)
+# Format everything (C/C++ + Bazel in one pass)
 bazel run @devtools//:format_all
 
 # CI: verify nothing needs formatting
 bazel run @devtools//:format_all -- --check
 
-# Lint everything (C/C++ + Bazel + Python in one pass)
+# Lint everything (C/C++ + Bazel in one pass)
 bazel run @devtools//:lint_all
 
 # Auto-fix lint issues
@@ -93,15 +85,6 @@ bazel run @devtools//:lint_all -- --fix
 
 # Run just clang-format check on C/C++
 bazel run @devtools//:clang_format -- --check
-
-# Run just ruff check on Python
-bazel run @devtools//:ruff -- --check
-
-# Run just black check on Python
-bazel run @devtools//:black -- --check
-
-# Run just mypy on Python
-bazel run @devtools//:mypy -- src/
 
 # Generate compile_commands.json for clangd
 bazel run @devtools//:compile_commands
@@ -112,8 +95,6 @@ bazel run @devtools//:compile_commands
 All tools follow the same resolution order:
 1. **Hermetic** — hermetic binary from LLVM/buildtools (default for C/C++ and Bazel tools)
 2. **System PATH** — fallback with warning if hermetic not available
-
-Python tools use system PATH only (ruff, black, mypy must be on PATH).
 
 ## Configuration
 
@@ -126,7 +107,6 @@ devtools.configure(
     lint_srcs = ["src/**/*.cpp"],                  # for clang_tidy (default: format_srcs)
     sast_srcs = ["src/**/*.cpp"],                  # for sast (default: format_srcs)
     ctags_srcs = ["src/**/*.cpp"],                 # for ctags (default: format_srcs)
-    py_srcs = ["src/**/*.py"],                     # for ruff/black/mypy
 )
 ```
 
@@ -136,7 +116,6 @@ To use system tools without hermetic downloads:
 devtools.configure(
     llvm = "none",         # use system clang-format, clang-tidy, etc.
     buildtools = "none",   # use system buildifier, buildozer
-    py_srcs = ["src/**/*.py"],
 )
 ```
 

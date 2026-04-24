@@ -40,7 +40,6 @@ load("//bazel:bazel_devtools.bzl", "bazel_devtools")
 load("//cc:cc_devtools.bzl", "cc_devtools")
 load("//format_all:format_all.bzl", "format_all")
 load("//lint_all:lint_all.bzl", "lint_all")
-load("//py:py_devtools.bzl", "py_devtools")
 
 def devtools(
         name,
@@ -50,7 +49,6 @@ def devtools(
         sast_srcs = None,
         ctags_srcs = None,
         buildifier_srcs = None,
-        py_srcs = None,
         clang_format_hermetic = None,
         clang_format_system = "clang-format",
         clang_tidy_hermetic = None,
@@ -70,12 +68,6 @@ def devtools(
         buildifier_mode = "fix",
         buildifier_lint = "warn",
         buildifier_warnings = "",
-        ruff_hermetic = None,
-        ruff_system = "ruff",
-        black_hermetic = None,
-        black_system = "black",
-        mypy_hermetic = None,
-        mypy_system = "mypy",
         **kwargs):
     """Create the full devtools target set with a single macro call.
 
@@ -87,7 +79,6 @@ def devtools(
         sast_srcs: Glob patterns for sast. Defaults to format_srcs.
         ctags_srcs: Glob patterns for ctags. Defaults to format_srcs.
         buildifier_srcs: Glob patterns for buildifier sources.
-        py_srcs: Glob patterns for Python sources.
         clang_format_hermetic: Label to hermetic clang-format binary.
         clang_format_system: PATH binary name for clang-format fallback (default "clang-format").
         clang_tidy_hermetic: Label to hermetic clang-tidy binary.
@@ -107,12 +98,6 @@ def devtools(
         buildifier_mode: Buildifier mode (fix/check/diff). Default: "fix".
         buildifier_lint: Buildifier lint mode (off/warn/fix). Default: "warn".
         buildifier_warnings: Comma-separated buildifier warnings.
-        ruff_hermetic: Label to hermetic ruff binary.
-        ruff_system: PATH binary name for ruff fallback (default "ruff").
-        black_hermetic: Label to hermetic black binary.
-        black_system: PATH binary name for black fallback (default "black").
-        mypy_hermetic: Label to hermetic mypy binary.
-        mypy_system: PATH binary name for mypy fallback (default "mypy").
         **kwargs: Additional common attributes passed to all targets.
     """
     cc_devtools(
@@ -150,33 +135,15 @@ def devtools(
         **kwargs
     )
 
-    py_devtools(
-        name = name,
-        srcs = py_srcs,
-        ruff_hermetic = ruff_hermetic,
-        ruff_system = ruff_system,
-        black_hermetic = black_hermetic,
-        black_system = black_system,
-        mypy_hermetic = mypy_hermetic,
-        mypy_system = mypy_system,
-        **kwargs
-    )
-
     fa_kwargs = dict(kwargs)
     if format_srcs:
         fa_kwargs["cpp_srcs"] = format_srcs
     if buildifier_srcs:
         fa_kwargs["bazel_srcs"] = buildifier_srcs
-    if py_srcs:
-        fa_kwargs["py_srcs"] = py_srcs
     fa_kwargs["clang_format_hermetic"] = clang_format_hermetic
     fa_kwargs["clang_format_system"] = clang_format_system
     fa_kwargs["buildifier_hermetic"] = buildifier_hermetic
     fa_kwargs["buildifier_system"] = buildifier_system
-    fa_kwargs["ruff_hermetic"] = ruff_hermetic
-    fa_kwargs["ruff_system"] = ruff_system
-    fa_kwargs["black_hermetic"] = black_hermetic
-    fa_kwargs["black_system"] = black_system
     format_all(name = name + "_format_all", **fa_kwargs)
 
     la_kwargs = dict(kwargs)
@@ -185,12 +152,8 @@ def devtools(
         la_kwargs["cpp_srcs"] = la_cpp_srcs
     if buildifier_srcs:
         la_kwargs["bazel_srcs"] = buildifier_srcs
-    if py_srcs:
-        la_kwargs["py_srcs"] = py_srcs
     la_kwargs["clang_tidy_hermetic"] = clang_tidy_hermetic
     la_kwargs["clang_tidy_system"] = clang_tidy_system
     la_kwargs["buildifier_hermetic"] = buildifier_hermetic
     la_kwargs["buildifier_system"] = buildifier_system
-    la_kwargs["ruff_hermetic"] = ruff_hermetic
-    la_kwargs["ruff_system"] = ruff_system
     lint_all(name = name + "_lint_all", **la_kwargs)

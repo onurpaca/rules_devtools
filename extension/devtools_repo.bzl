@@ -23,9 +23,6 @@ def _devtools_repo_impl(rctx):
         'load("@rules_devtools//cc:unused_deps.bzl", "unused_deps")',
         'load("@rules_devtools//format_all:format_all.bzl", "format_all")',
         'load("@rules_devtools//lint_all:lint_all.bzl", "lint_all")',
-        'load("@rules_devtools//py:ruff.bzl", "ruff")',
-        'load("@rules_devtools//py:black.bzl", "black")',
-        'load("@rules_devtools//py:mypy.bzl", "mypy")',
         "",
     ]
 
@@ -118,61 +115,34 @@ def _devtools_repo_impl(rctx):
     bo_kwargs["system"] = repr(rctx.attr.buildozer_system)
     lines.append(_render_call("buildozer", bo_kwargs))
 
-    # 12. format_all (smart dispatch: clang-format + buildifier + ruff)
+    # 12. format_all (smart dispatch: clang-format + buildifier)
     fa_kwargs = {"name": repr("format_all")}
     if rctx.attr.format_srcs:
         fa_kwargs["cpp_srcs"] = repr(rctx.attr.format_srcs)
     if rctx.attr.buildifier_srcs:
         fa_kwargs["bazel_srcs"] = repr(rctx.attr.buildifier_srcs)
-    if rctx.attr.py_srcs:
-        fa_kwargs["py_srcs"] = repr(rctx.attr.py_srcs)
     if rctx.attr.clang_format_hermetic:
         fa_kwargs["clang_format_hermetic"] = repr(rctx.attr.clang_format_hermetic)
     fa_kwargs["clang_format_system"] = repr(rctx.attr.clang_format_system)
     if rctx.attr.buildifier_hermetic:
         fa_kwargs["buildifier_hermetic"] = repr(rctx.attr.buildifier_hermetic)
     fa_kwargs["buildifier_system"] = repr(rctx.attr.buildifier_system)
-    fa_kwargs["ruff_system"] = repr(rctx.attr.ruff_system)
     lines.append(_render_call("format_all", fa_kwargs))
 
-    # 13. lint_all (smart dispatch: clang-tidy + buildifier-lint + ruff)
+    # 13. lint_all (smart dispatch: clang-tidy + buildifier-lint)
     la_kwargs = {"name": repr("lint_all")}
     la_cpp_srcs = rctx.attr.lint_srcs or rctx.attr.format_srcs
     if la_cpp_srcs:
         la_kwargs["cpp_srcs"] = repr(la_cpp_srcs)
     if rctx.attr.buildifier_srcs:
         la_kwargs["bazel_srcs"] = repr(rctx.attr.buildifier_srcs)
-    if rctx.attr.py_srcs:
-        la_kwargs["py_srcs"] = repr(rctx.attr.py_srcs)
     if rctx.attr.clang_tidy_hermetic:
         la_kwargs["clang_tidy_hermetic"] = repr(rctx.attr.clang_tidy_hermetic)
     la_kwargs["clang_tidy_system"] = repr(rctx.attr.clang_tidy_system)
     if rctx.attr.buildifier_hermetic:
         la_kwargs["buildifier_hermetic"] = repr(rctx.attr.buildifier_hermetic)
     la_kwargs["buildifier_system"] = repr(rctx.attr.buildifier_system)
-    la_kwargs["ruff_system"] = repr(rctx.attr.ruff_system)
     lines.append(_render_call("lint_all", la_kwargs))
-
-    # 14. ruff
-    ruff_kwargs = {"name": repr("ruff")}
-    if rctx.attr.py_srcs:
-        ruff_kwargs["srcs"] = repr(rctx.attr.py_srcs)
-    ruff_kwargs["system"] = repr(rctx.attr.ruff_system)
-    lines.append(_render_call("ruff", ruff_kwargs))
-
-    # 15. black
-    black_kwargs = {"name": repr("black")}
-    if rctx.attr.py_srcs:
-        black_kwargs["srcs"] = repr(rctx.attr.py_srcs)
-    black_kwargs["system"] = repr(rctx.attr.black_system)
-    lines.append(_render_call("black", black_kwargs))
-
-    # 16. mypy
-    mypy_kwargs = {"name": repr("mypy")}
-    if rctx.attr.py_srcs:
-        mypy_kwargs["srcs"] = repr(rctx.attr.py_srcs)
-    mypy_kwargs["system"] = repr(rctx.attr.mypy_system)
-    lines.append(_render_call("mypy", mypy_kwargs))
 
     rctx.file("BUILD.bazel", content = "\n".join(lines) + "\n")
 
@@ -211,9 +181,5 @@ devtools_repo = repository_rule(
         "buildifier_mode": attr.string(default = "fix"),
         "buildifier_lint": attr.string(default = "warn"),
         "buildifier_warnings": attr.string(default = ""),
-        "py_srcs": attr.string_list(doc = "Glob patterns for Python sources."),
-        "ruff_system": attr.string(default = "ruff"),
-        "black_system": attr.string(default = "black"),
-        "mypy_system": attr.string(default = "mypy"),
     },
 )
