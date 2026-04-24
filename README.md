@@ -9,11 +9,11 @@ Add to your `MODULE.bazel`, pinning to a commit from GitHub. Grab the latest SHA
 
 ```starlark
 # MODULE.bazel
-bazel_dep(name = "rules_devtools", version = "1.8.0")
+bazel_dep(name = "rules_devtools", version = "1.0.0")
 git_override(
     module_name = "rules_devtools",
     remote = "https://github.com/onurpaca/rules_devtools.git",
-    commit = "<paste-latest-sha-here>",
+    commit = "00802668aafdd1959d229a219788416c2c4155a5",
 )
 
 devtools = use_extension("@rules_devtools//extension:devtools_ext.bzl", "devtools_extension")
